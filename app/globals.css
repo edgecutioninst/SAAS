@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@plugin "daisyui" {
+  themes: dark;
+}
+
+
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -20,7 +26,7 @@
 }
 
 body {
-  background: var(--background);
+  background-image: url("https://images.pexels.com/photos/4041750/pexels-photo-4041750.jpeg");
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
