@@ -8,7 +8,6 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-white selection:bg-blue-500/30">
 
-      {/* 1. NAVBAR */}
       <nav className="border-b border-white/10 backdrop-blur-md fixed w-full z-50 top-0">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -73,7 +72,6 @@ export default async function LandingPage() {
       <section id="features" className="py-24 bg-neutral-950/50 border-y border-white/5">
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
             <div className="bg-black border border-white/10 p-8 rounded-2xl hover:border-white/20 transition-colors group">
               <div className="bg-blue-500/10 w-12 h-12 flex items-center justify-center rounded-xl mb-6 group-hover:scale-110 transition-transform">
                 <Zap className="text-blue-500" size={24} />

@@ -76,7 +76,6 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            {/* 1. THUMBNAIL AREA */}
             <figure className="aspect-video relative overflow-hidden bg-neutral-900">
                 {isHovered ? (
                     previewError ? (
@@ -108,7 +107,6 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
                 </div>
             </figure>
 
-            {/* 2. CARD CONTENT */}
             <div className="p-5 flex flex-col gap-4">
                 <div>
                     <h2 className="text-lg font-bold text-white mb-1 line-clamp-1 group-hover:text-gray-300 transition-colors">
@@ -122,7 +120,6 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
                     </p>
                 </div>
 
-                {/* Technical Stats Section */}
                 <div className="grid grid-cols-2 gap-3 bg-neutral-900/50 rounded-lg p-3 border border-white/5">
                     <div className="flex flex-col gap-1 text-center">
                         <div className="flex items-center justify-center gap-1.5 text-neutral-500 text-[10px] uppercase tracking-tighter font-bold">
@@ -142,7 +139,6 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
                     </div>
                 </div>
 
-                {/* Footer Actions */}
                 <div className="flex justify-between items-center pt-2 border-t border-white/5">
                     <div className="text-xs font-medium text-neutral-500">
                         {compressionPercentage > 0 ? (

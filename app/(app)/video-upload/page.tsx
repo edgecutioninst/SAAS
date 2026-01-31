@@ -18,7 +18,6 @@ function VideoUpload() {
     const router = useRouter();
 
     const handleUploadSuccess = (result: any) => {
-        // The widget is done! We get the details here.
         if (result.info) {
             setPublicId(result.info.public_id);
             setDuration(result.info.duration);
@@ -39,7 +38,6 @@ function VideoUpload() {
         const loadingToast = toast.loading("Saving details...", { style: { background: '#000', color: '#fff', border: '1px solid #333' } });
 
         try {
-            // We now just send the metadata to our DB
             const res = await axios.post('/api/video-upload', {
                 title,
                 description,
@@ -89,7 +87,6 @@ function VideoUpload() {
                         />
                     </div>
 
-                    {/* Description */}
                     <div>
                         <label className="label text-gray-400 font-medium flex items-center gap-2 mb-1 text-sm uppercase tracking-wider">
                             <AlignLeft size={14} /> Description
@@ -102,20 +99,19 @@ function VideoUpload() {
                         />
                     </div>
 
-                    {/* Cloudinary Widget Area */}
                     <div>
                         <label className="label text-gray-400 font-medium flex items-center gap-2 mb-2 text-sm uppercase tracking-wider">
                             <FileVideo size={14} /> Video File
                         </label>
 
                         <CldUploadWidget
-                            uploadPreset="saas_uploads" // <--- PASTE YOUR PRESET NAME HERE
+                            uploadPreset="saas_uploads"
                             onSuccess={handleUploadSuccess}
                             options={{
                                 resourceType: "video",
                                 clientAllowedFormats: ["mp4", "mov"],
-                                maxFileSize: 100000000, // 100MB limit
-                                theme: "minimal" // Fits your dark theme reasonably well
+                                maxFileSize: 100000000,
+                                theme: "minimal"
                             }}
                         >
                             {({ open }) => {
@@ -148,7 +144,6 @@ function VideoUpload() {
                         </CldUploadWidget>
                     </div>
 
-                    {/* Submit Button */}
                     <button
                         type="submit"
                         className="btn w-full bg-white hover:bg-gray-200 text-black border-none py-3 text-lg font-bold rounded-lg disabled:opacity-50"

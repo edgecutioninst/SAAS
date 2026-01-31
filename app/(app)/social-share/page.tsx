@@ -63,9 +63,8 @@ export default function SocialShare() {
                             Upload Image
                         </h2>
 
-                        {/* WIDGET REPLACES THE OLD INPUT */}
                         <CldUploadWidget
-                            uploadPreset="saas_uploads" // Same preset we created earlier
+                            uploadPreset="saas_uploads"
                             options={{
                                 multiple: false,
                                 resourceType: "image"
