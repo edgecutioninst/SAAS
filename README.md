@@ -46,13 +46,13 @@ The Social Media Creator tool utilizes Cloudinary’s `g_auto` (gravity auto) pa
 
 1. **Clone the repository**
    ```bash
-   git clone [https://github.com/edgecutioninst/SAAS.git](https://github.com/edgecutioninst/SAAS.git)
-   cd SAAS
+         git clone [https://github.com/edgecutioninst/SAAS.git](https://github.com/edgecutioninst/SAAS.git)
+         cd SAAS
    ```
 
 2. **Install dependencies**
   ```bash
-    npm install
+       npm install
   ```
 
 
@@ -64,6 +64,8 @@ The Social Media Creator tool utilizes Cloudinary’s `g_auto` (gravity auto) pa
       NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your_cloud_name"
       CLOUDINARY_API_KEY="your_api_key"
       CLOUDINARY_API_SECRET="your_api_secret"
+      NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/home
+      NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/home
   ```
 
 4. **Initialize Database**
@@ -75,5 +77,5 @@ The Social Media Creator tool utilizes Cloudinary’s `g_auto` (gravity auto) pa
     
 5. **Run development server**
 ```bash 
-  npm run dev
+     npm run dev
 ```
