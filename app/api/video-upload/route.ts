@@ -1,7 +1,6 @@
-import { NextResponse, NextRequest } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
-import { auth } from '@clerk/nextjs/server'
-import { PrismaClient } from "@@/app/generated/prisma/client"; // Correct path
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { PrismaClient } from "@@/app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
@@ -9,89 +8,36 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-    secure: true
-});
-
-interface CloudinaryUploadResult {
-    public_id: string;
-    bytes: number;
-    duration?: number;
-    [key: string]: any;
-}
-
 export async function POST(request: NextRequest) {
-
     try {
-
         const { userId } = await auth();
+
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-            return NextResponse.json({ error: "Missing Cloudinary credentials" }, { status: 401 });
-        }
-
-
-        const formData = await request.formData()
-        const file = formData.get('file') as File | null;
-        const title = formData.get('title') as string;
-        const description = formData.get('description') as string;
-        const originalSize = formData.get('originalSize') as string;
-
-
-        if (!file) {
-            return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
-        }
-
-        const bytes = await file.arrayBuffer();
-
-        const buffer = Buffer.from(bytes);
-
-        const result = await new Promise<CloudinaryUploadResult>(
-            (resolve, reject) => {
-                const uploadStream = cloudinary.uploader.upload_stream(
-                    {
-                        resource_type: "video",
-                        transformation: [{
-                            quality: "auto",
-                            fetch_format: "mp4",
-                        }],
-                        folder: "next-cloudinary-upload-video"
-                    },
-                    (error, result) => {
-                        if (error) reject(error);
-                        else resolve(result as CloudinaryUploadResult);
-                    }
-                )
-                uploadStream.end(buffer);
-            }
-        )
+        const body = await request.json();
+        const { title, description, publicId, duration, originalSize } = body;
 
         const video = await prisma.video.create({
             data: {
                 title: title,
-                compressedSize: String(result.bytes),
-                description: description,
-                originalSize: originalSize,
-                publicId: result.public_id,
-                duration: result.duration || 0,
-                userId: userId,
-                bytes: result.bytes,
+                description: description || "",
+                publicId: publicId,
+                originalSize: originalSize ? String(originalSize) : "0",
+                compressedSize: String(Number(originalSize || 0) * 0.8), // Placeholder compression logic
+                duration: Number(duration) || 0,
+                bytes: Number(originalSize) || 0,
+                userId: userId
             }
-        })
+        });
 
-        return NextResponse.json(video)
-
+        return NextResponse.json(video);
 
     } catch (error: any) {
-        console.log("error uploading video", error)
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        console.error("Server Error:", error);
+        return NextResponse.json({ error: "Error saving video" }, { status: 500 });
     } finally {
-        await prisma.$disconnect()
+        await prisma.$disconnect();
     }
 }

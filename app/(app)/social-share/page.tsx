@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react'
-import { CldImage } from 'next-cloudinary';
+import { CldImage, CldUploadWidget } from 'next-cloudinary';
+import { Upload, Image as ImageIcon, Download, Loader2, Layout } from 'lucide-react';
 
 const socialFormats = {
     "Instagram Square (1:1)": { width: 1080, height: 1080, aspectRatio: "1:1" },
@@ -12,15 +13,10 @@ const socialFormats = {
 
 type socialFormat = keyof typeof socialFormats;
 
-
-
 export default function SocialShare() {
 
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-
     const [selectedFormat, setSelectedFormat] = useState<socialFormat>("Instagram Square (1:1)");
-
-    const [isUploading, setIsUploading] = useState(false);
     const [isTransforming, setIsTransforming] = useState(false);
     const imageRef = useRef<HTMLImageElement>(null);
 
@@ -30,36 +26,7 @@ export default function SocialShare() {
         }
     }, [selectedFormat, uploadedImage])
 
-    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        setIsUploading(true);
-        const formData = new FormData();
-        formData.append("file", file);
-
-        try {
-            const res = await fetch("/api/image-upload", {
-                method: "POST",
-                body: formData
-            })
-
-            if (!res.ok) {
-                throw new Error("Failed to upload image")
-            }
-
-            const data = await res.json();
-            setUploadedImage(data.public_id);
-
-        } catch (error: any) {
-            console.log(error);
-            alert("Failed to upload image")
-        } finally {
-            setIsUploading(false);
-        }
-    }
-
     const handleDownload = () => {
-
         if (!imageRef.current) return;
 
         fetch(imageRef.current.src)
@@ -75,63 +42,88 @@ export default function SocialShare() {
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(link);
             })
-
-
     }
 
     return (
-        <div className="container mx-auto p-4 max-w-4xl">
-            <h1 className="text-3xl font-bold mb-6 text-center">
-                Social Media Image Creator
-            </h1>
+        <div className="container mx-auto p-4 max-w-4xl min-h-screen flex flex-col justify-center">
 
-            <div className="card">
-                <div className="card-body">
-                    <h2 className="card-title mb-4">Upload an Image</h2>
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text">Choose an image file</span>
-                        </label>
-                        <input
-                            type="file"
-                            onChange={handleFileUpload}
-                            className="file-input file-input-bordered file-input-primary w-full"
-                        />
+            <div className="text-center mb-10">
+                <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+                    Social Media Creator
+                </h1>
+                <p className="text-gray-500">Format images for any platform.</p>
+            </div>
+
+            <div className="bg-black border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+                <div className="p-8">
+
+                    <div className="mb-8">
+                        <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
+                            <Upload className="w-4 h-4" />
+                            Upload Image
+                        </h2>
+
+                        {/* WIDGET REPLACES THE OLD INPUT */}
+                        <CldUploadWidget
+                            uploadPreset="saas_uploads" // Same preset we created earlier
+                            options={{
+                                multiple: false,
+                                resourceType: "image"
+                            }}
+                            onSuccess={(result: any) => {
+                                setUploadedImage(result.info.public_id);
+                            }}
+                        >
+                            {({ open }) => {
+                                return (
+                                    <div
+                                        onClick={() => open()}
+                                        className="relative group cursor-pointer"
+                                    >
+                                        <div className={`border border-dashed rounded-xl p-10 flex flex-col items-center justify-center transition-all duration-300 border-white/20 hover:border-white/50 hover:bg-white/5 bg-neutral-900/50`}>
+                                            <div className="bg-white/5 p-3 rounded-full mb-3 group-hover:bg-white/10 transition-colors">
+                                                <ImageIcon className="w-6 h-6 text-gray-300" />
+                                            </div>
+                                            <p className="text-gray-300 font-medium">Click to upload image</p>
+                                            <p className="text-gray-600 text-sm mt-1">PNG, JPG, WebP</p>
+                                        </div>
+                                    </div>
+                                );
+                            }}
+                        </CldUploadWidget>
                     </div>
 
-                    {isUploading && (
-                        <div className="mt-4">
-                            <progress className="progress progress-primary w-full"></progress>
-                        </div>
-                    )}
-
                     {uploadedImage && (
-                        <div className="mt-6">
-                            <h2 className="card-title mb-4">Select Social Media Format</h2>
-                            <div className="form-control">
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="divider border-t border-white/10 my-8"></div>
+
+                            <div className="mb-6">
+                                <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
+                                    <Layout className="w-4 h-4" />
+                                    Choose Format
+                                </h2>
                                 <select
-                                    className="select select-bordered w-full"
+                                    className="w-full bg-neutral-900 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-white/30 transition-all appearance-none cursor-pointer"
                                     value={selectedFormat}
-                                    onChange={(e) =>
-                                        setSelectedFormat(e.target.value as socialFormat)
-                                    }
+                                    onChange={(e) => setSelectedFormat(e.target.value as socialFormat)}
                                 >
                                     {Object.keys(socialFormats).map((format) => (
-                                        <option key={format} value={format}>
+                                        <option key={format} value={format} className="bg-black">
                                             {format}
                                         </option>
                                     ))}
                                 </select>
                             </div>
 
-                            <div className="mt-6 relative">
-                                <h3 className="text-lg font-semibold mb-2">Preview:</h3>
-                                <div className="flex justify-center">
-                                    {isTransforming && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-base-100 bg-opacity-50 z-10">
-                                            <span className="loading loading-spinner loading-lg"></span>
-                                        </div>
-                                    )}
+                            <div className="bg-neutral-900/50 rounded-xl p-4 border border-white/5 flex justify-center items-center min-h-[400px] relative overflow-hidden">
+                                {isTransforming && (
+                                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+                                        <Loader2 className="w-10 h-10 text-white animate-spin mb-2" />
+                                        <p className="text-gray-400 text-sm">Resizing with AI...</p>
+                                    </div>
+                                )}
+
+                                <div className="relative shadow-2xl shadow-black">
                                     <CldImage
                                         width={socialFormats[selectedFormat].width}
                                         height={socialFormats[selectedFormat].height}
@@ -143,12 +135,18 @@ export default function SocialShare() {
                                         gravity='auto'
                                         ref={imageRef}
                                         onLoad={() => setIsTransforming(false)}
+                                        className="max-w-full max-h-[500px] object-contain"
                                     />
                                 </div>
                             </div>
 
-                            <div className="card-actions justify-end mt-6">
-                                <button className="btn btn-primary" onClick={handleDownload}>
+                            <div className="mt-8 flex justify-end">
+                                <button
+                                    className="btn bg-white hover:bg-gray-200 text-black border-none px-8 py-3 rounded-lg font-bold flex items-center gap-2 transition-all hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={handleDownload}
+                                    disabled={isTransforming}
+                                >
+                                    <Download className="w-5 h-5" />
                                     Download for {selectedFormat}
                                 </button>
                             </div>
@@ -158,6 +156,4 @@ export default function SocialShare() {
             </div>
         </div>
     );
-
 }
-

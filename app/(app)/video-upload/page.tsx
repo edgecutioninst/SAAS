@@ -1,109 +1,171 @@
 "use client";
-import toast from 'react-hot-toast';
-import react, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
-
+import toast from 'react-hot-toast';
+import { FileVideo, Type, AlignLeft, Loader2 } from 'lucide-react';
+import { CldUploadWidget } from 'next-cloudinary';
 
 function VideoUpload() {
 
-    const [file, setFile] = useState<File | null>(null);
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
-    const [isUploading, setIsUploading] = useState(false);
+    const [publicId, setPublicId] = useState<string | null>(null);
+    const [duration, setDuration] = useState<number>(0);
+    const [originalSize, setOriginalSize] = useState<string>('0');
+    const [isSaving, setIsSaving] = useState(false);
 
     const router = useRouter();
 
-    //max size: 70mb
-
-    const MAX_FILE_SIZE = 70 * 1024 * 1024;
+    const handleUploadSuccess = (result: any) => {
+        // The widget is done! We get the details here.
+        if (result.info) {
+            setPublicId(result.info.public_id);
+            setDuration(result.info.duration);
+            setOriginalSize(result.info.bytes);
+            toast.success("Video uploaded to cloud!", { style: { background: '#000', color: '#fff', border: '1px solid #333' } });
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (!file) return;
-
-        if (file.size > MAX_FILE_SIZE) {
-            toast.error("File too large");
+        if (!publicId) {
+            toast.error("Please upload a video first", { style: { background: '#000', color: '#fff', border: '1px solid #333' } });
             return;
         }
 
-        setIsUploading(true);
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("title", title);
-        formData.append("description", description);
-        formData.append("originalSize", file.size.toString());
-
+        setIsSaving(true);
+        const loadingToast = toast.loading("Saving details...", { style: { background: '#000', color: '#fff', border: '1px solid #333' } });
 
         try {
-            const res = await axios.post('/api/video-upload', formData);
+            // We now just send the metadata to our DB
+            const res = await axios.post('/api/video-upload', {
+                title,
+                description,
+                publicId,
+                duration,
+                originalSize
+            });
 
-            //check for 200:
             if (res.status === 200) {
-                router.push(`/video/${res.data.public_id}`);
+                toast.dismiss(loadingToast);
+                toast.success("Published successfully!", { style: { background: '#000', color: '#fff', border: '1px solid #333' } });
+                router.push("/home");
             }
 
         } catch (error) {
-            console.log(error);
+            console.error(error);
+            toast.dismiss(loadingToast);
+            toast.error("Failed to save video details", { style: { background: '#000', color: '#fff', border: '1px solid #333' } });
         } finally {
-            setIsUploading(false);
+            setIsSaving(false);
         }
-
-
-
     }
 
-
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Upload Video</h1>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="label">
-                        <span className="label-text">Title</span>
-                    </label>
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="input input-bordered w-full"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="label">
-                        <span className="label-text">Description</span>
-                    </label>
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="textarea textarea-bordered w-full"
-                    />
-                </div>
-                <div>
-                    <label className="label">
-                        <span className="label-text">Video File</span>
-                    </label>
-                    <input
-                        type="file"
-                        accept="video/*"
-                        onChange={(e) => setFile(e.target.files?.[0] || null)}
-                        className="file-input file-input-bordered w-full"
-                        required
-                    />
-                </div>
-                <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={isUploading}
-                >
-                    {isUploading ? "Uploading..." : "Upload Video"}
-                </button>
-            </form>
+        <div className="container mx-auto p-4 max-w-2xl min-h-screen flex flex-col justify-center">
+
+            <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Upload Video</h1>
+                <p className="text-gray-500">Add to your collection.</p>
+            </div>
+
+            <div className="bg-black border border-white/10 rounded-2xl shadow-xl p-8">
+                <form onSubmit={handleSubmit} className="space-y-6">
+
+                    {/* Title */}
+                    <div>
+                        <label className="label text-gray-400 font-medium flex items-center gap-2 mb-1 text-sm uppercase tracking-wider">
+                            <Type size={14} /> Title
+                        </label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="input w-full bg-neutral-900 border border-white/10 text-white focus:outline-none focus:border-white/30 rounded-lg"
+                            placeholder="Video title"
+                            required
+                        />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label className="label text-gray-400 font-medium flex items-center gap-2 mb-1 text-sm uppercase tracking-wider">
+                            <AlignLeft size={14} /> Description
+                        </label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="textarea w-full h-32 bg-neutral-900 border border-white/10 text-white focus:outline-none focus:border-white/30 resize-none rounded-lg"
+                            placeholder="Video description"
+                        />
+                    </div>
+
+                    {/* Cloudinary Widget Area */}
+                    <div>
+                        <label className="label text-gray-400 font-medium flex items-center gap-2 mb-2 text-sm uppercase tracking-wider">
+                            <FileVideo size={14} /> Video File
+                        </label>
+
+                        <CldUploadWidget
+                            uploadPreset="saas_uploads" // <--- PASTE YOUR PRESET NAME HERE
+                            onSuccess={handleUploadSuccess}
+                            options={{
+                                resourceType: "video",
+                                clientAllowedFormats: ["mp4", "mov"],
+                                maxFileSize: 100000000, // 100MB limit
+                                theme: "minimal" // Fits your dark theme reasonably well
+                            }}
+                        >
+                            {({ open }) => {
+                                return (
+                                    <div
+                                        onClick={() => open()}
+                                        className={`border border-dashed rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 
+                                            ${publicId ? 'border-green-500/50 bg-green-500/5' : 'border-white/20 hover:border-white/40 hover:bg-white/5 bg-black'}
+                                        `}
+                                    >
+                                        {publicId ? (
+                                            <div className="text-center">
+                                                <div className="bg-green-500/10 p-3 rounded-full mb-3 mx-auto w-fit">
+                                                    <FileVideo className="w-6 h-6 text-green-500" />
+                                                </div>
+                                                <p className="text-white font-medium">Upload Complete!</p>
+                                                <p className="text-gray-500 text-sm mt-1">{(Number(originalSize) / (1024 * 1024)).toFixed(2)} MB</p>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center">
+                                                <div className="bg-white/5 p-3 rounded-full mb-3 mx-auto w-fit">
+                                                    <FileVideo className="w-6 h-6 text-gray-300" />
+                                                </div>
+                                                <p className="text-gray-300 font-medium">Click to upload video</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }}
+                        </CldUploadWidget>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        className="btn w-full bg-white hover:bg-gray-200 text-black border-none py-3 text-lg font-bold rounded-lg disabled:opacity-50"
+                        disabled={!publicId || isSaving}
+                    >
+                        {isSaving ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="animate-spin w-5 h-5" /> Saving...
+                            </div>
+                        ) : (
+                            "Publish Video"
+                        )}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }
 
-export default VideoUpload
+export default VideoUpload;

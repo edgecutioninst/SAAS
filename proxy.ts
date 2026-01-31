@@ -1,47 +1,24 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server';
 
-const isPublicRoute = createRouteMatcher([
-  '/sign-in',
-  '/sign-up',
-  '/',
-  '/home'
-])
-
-const isPublicApiRoute = createRouteMatcher([
-  '/api/videos'
+const isProtectedRoute = createRouteMatcher([
+  '/home(.*)',
+  '/api/video-upload',
+  '/api/image-upload',
+  '/social-share(.*)',
+  '/video-upload(.*)',
 ])
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth();
-  const currentUrl = new URL(req.url);
-  const isAccessingDashboard = currentUrl.pathname === "/home";
-  const isApiRequest = currentUrl.pathname.startsWith("/api")
 
-  //logged in user access public route and not accessing dashboard
-  if (userId && isPublicRoute(req) && !isAccessingDashboard) {
-    return NextResponse.redirect(new URL("/home", req.url));
+  if (isProtectedRoute(req)) {
+    await auth.protect()
   }
-  //not logged in user 
-  if (!userId) {
-    //not logged in user access protected route
-    if (!isPublicRoute(req) && !isPublicApiRoute(req)) {
-      return NextResponse.redirect(new URL("/sign-in", req.url));
-    }
-
-    //logged in user access protected api route
-    if (isApiRequest && !isPublicApiRoute(req)) {
-      return NextResponse.redirect(new URL("/sign-in", req.url));
-    }
-  }
-  return NextResponse.next();
 })
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
+    '/((?!trpc|_next/static|_next/image|favicon.ico|.*\\..*|sign-in|sign-up).*)',
+    '/api/video-upload',
+    '/api/image-upload',
   ],
 }
