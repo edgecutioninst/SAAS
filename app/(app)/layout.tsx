@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -12,6 +11,7 @@ import {
     Share2Icon,
     UploadIcon,
     ImageIcon,
+    X,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -40,101 +40,99 @@ export default function AppLayout({
     };
 
     return (
-        <div className="drawer lg:drawer-open">
-            <input
-                id="sidebar-drawer"
-                type="checkbox"
-                className="drawer-toggle"
-                checked={sidebarOpen}
-                onChange={() => setSidebarOpen(!sidebarOpen)}
-            />
-            <div className="drawer-content flex flex-col">
-                {/* Navbar */}
-                <header className="w-full bg-base-200">
-                    <div className="navbar max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex-none lg:hidden">
-                            <label
-                                htmlFor="sidebar-drawer"
-                                className="btn btn-square btn-ghost drawer-button"
+        <div className="flex min-h-screen bg-black text-white">
+            {/* Mobile Sidebar Overlay */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
+            {/* Sidebar Aside */}
+            <aside className={`
+                fixed inset-y-0 left-0 z-50 w-64 bg-neutral-950 border-r border-white/10 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+                ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            `}>
+                <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between px-6 h-16 border-b border-white/10">
+                        <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
+                            <ImageIcon className="w-8 h-8 text-blue-500" />
+                            <span className="font-bold text-xl tracking-tight">Void Vault</span>
+                        </div>
+                        <button className="lg:hidden" onClick={() => setSidebarOpen(false)}>
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    <nav className="flex-grow p-4 space-y-2">
+                        {sidebarItems.map((item) => (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`flex items-center space-x-4 px-4 py-3 rounded-xl transition-all duration-200 ${pathname === item.href
+                                        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                                        : "text-neutral-400 hover:bg-white/5 hover:text-white"
+                                    }`}
+                                onClick={() => setSidebarOpen(false)}
                             >
-                                <MenuIcon />
-                            </label>
-                        </div>
-                        <div className="flex-1">
-                            <Link href="/" onClick={handleLogoClick}>
-                                <div className="btn btn-ghost normal-case text-2xl font-bold tracking-tight cursor-pointer">
-                                    Void Vault
-                                </div>
+                                <item.icon className="w-5 h-5" />
+                                <span className="font-medium">{item.label}</span>
                             </Link>
+                        ))}
+                    </nav>
+
+                    {user && (
+                        <div className="p-4 border-t border-white/10">
+                            <button
+                                onClick={handleSignOut}
+                                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-colors font-medium"
+                            >
+                                <LogOutIcon size={18} />
+                                Sign Out
+                            </button>
                         </div>
-                        <div className="flex-none flex items-center space-x-4">
+                    )}
+                </div>
+            </aside>
+
+            {/* Main Content Area */}
+            <div className="flex-grow flex flex-col min-w-0">
+                <header className="h-16 border-b border-white/10 bg-black/50 backdrop-blur-md sticky top-0 z-30">
+                    <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between">
+                        <button
+                            className="lg:hidden p-2 hover:bg-white/5 rounded-lg"
+                            onClick={() => setSidebarOpen(true)}
+                        >
+                            <MenuIcon />
+                        </button>
+
+                        <div className="flex items-center ml-auto space-x-4">
                             {user && (
                                 <>
-                                    <div className="avatar">
-                                        <div className="w-8 h-8 rounded-full">
-                                            <img
-                                                src={user.imageUrl}
-                                                alt={
-                                                    user.username || user.emailAddresses[0].emailAddress
-                                                }
-                                            />
-                                        </div>
+                                    <div className="hidden sm:flex flex-col items-end">
+                                        <span className="text-sm font-medium text-white truncate max-w-[150px]">
+                                            {user.username || user.emailAddresses[0].emailAddress}
+                                        </span>
                                     </div>
-                                    <span className="text-sm truncate max-w-xs lg:max-w-md">
-                                        {user.username || user.emailAddresses[0].emailAddress}
-                                    </span>
-                                    <button
-                                        onClick={handleSignOut}
-                                        className="btn btn-ghost btn-circle"
-                                    >
-                                        <LogOutIcon className="h-6 w-6" />
-                                    </button>
+                                    <div className="w-9 h-9 rounded-full border border-white/20 overflow-hidden">
+                                        <img
+                                            src={user.imageUrl}
+                                            className="w-full h-full object-cover"
+                                            alt="Profile"
+                                        />
+                                    </div>
                                 </>
                             )}
                         </div>
                     </div>
                 </header>
-                <main className="flex-grow">
-                    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 my-8">
+
+                <main className="flex-grow p-4 lg:p-8">
+                    <div className="max-w-7xl mx-auto">
                         {children}
                     </div>
                 </main>
-            </div>
-            <div className="drawer-side">
-                <label htmlFor="sidebar-drawer" className="drawer-overlay"></label>
-                <aside className="bg-base-200 w-64 h-full flex flex-col">
-                    <div className="flex items-center justify-center py-4">
-                        <ImageIcon className="w-10 h-10 text-primary" />
-                    </div>
-                    <ul className="menu p-4 w-full text-base-content flex-grow">
-                        {sidebarItems.map((item) => (
-                            <li key={item.href} className="mb-2">
-                                <Link
-                                    href={item.href}
-                                    className={`flex items-center space-x-4 px-4 py-2 rounded-lg ${pathname === item.href
-                                        ? "bg-primary text-white"
-                                        : "hover:bg-base-300"
-                                        }`}
-                                    onClick={() => setSidebarOpen(false)}
-                                >
-                                    <item.icon className="w-6 h-6" />
-                                    <span>{item.label}</span>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                    {user && (
-                        <div className="p-4">
-                            <button
-                                onClick={handleSignOut}
-                                className="btn btn-outline btn-error w-full"
-                            >
-                                <LogOutIcon className="mr-2 h-5 w-5" />
-                                Sign Out
-                            </button>
-                        </div>
-                    )}
-                </aside>
             </div>
         </div>
     );

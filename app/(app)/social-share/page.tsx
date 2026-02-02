@@ -40,12 +40,11 @@ export default function SocialShare() {
                 link.click();
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
-                document.body.removeChild(link);
             })
     }
 
     return (
-        <div className="container mx-auto p-4 max-w-4xl min-h-screen flex flex-col justify-center">
+        <div className="container mx-auto p-4 max-w-4xl min-h-[calc(100vh-64px)] flex flex-col justify-center">
 
             <div className="text-center mb-10">
                 <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
@@ -94,24 +93,30 @@ export default function SocialShare() {
 
                     {uploadedImage && (
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="divider border-t border-white/10 my-8"></div>
+                            {/* Replaced 'divider' with standard border */}
+                            <div className="w-full h-px bg-white/10 my-8"></div>
 
                             <div className="mb-6">
                                 <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
                                     <Layout className="w-4 h-4" />
                                     Choose Format
                                 </h2>
-                                <select
-                                    className="w-full bg-neutral-900 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-white/30 transition-all appearance-none cursor-pointer"
-                                    value={selectedFormat}
-                                    onChange={(e) => setSelectedFormat(e.target.value as socialFormat)}
-                                >
-                                    {Object.keys(socialFormats).map((format) => (
-                                        <option key={format} value={format} className="bg-black">
-                                            {format}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="relative">
+                                    <select
+                                        className="w-full bg-neutral-900 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-white/30 transition-all appearance-none cursor-pointer"
+                                        value={selectedFormat}
+                                        onChange={(e) => setSelectedFormat(e.target.value as socialFormat)}
+                                    >
+                                        {Object.keys(socialFormats).map((format) => (
+                                            <option key={format} value={format} className="bg-black">
+                                                {format}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                                        <Layout size={16} />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="bg-neutral-900/50 rounded-xl p-4 border border-white/5 flex justify-center items-center min-h-[400px] relative overflow-hidden">
@@ -134,14 +139,14 @@ export default function SocialShare() {
                                         gravity='auto'
                                         ref={imageRef}
                                         onLoad={() => setIsTransforming(false)}
-                                        className="max-w-full max-h-[500px] object-contain"
+                                        className="max-w-full max-h-[500px] object-contain rounded-sm"
                                     />
                                 </div>
                             </div>
 
                             <div className="mt-8 flex justify-end">
                                 <button
-                                    className="btn bg-white hover:bg-gray-200 text-black border-none px-8 py-3 rounded-lg font-bold flex items-center gap-2 transition-all hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="bg-white hover:bg-gray-200 text-black px-8 py-3 rounded-lg font-bold flex items-center gap-2 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                                     onClick={handleDownload}
                                     disabled={isTransforming}
                                 >
