@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import Link from 'next/link'
-import VideoCard from '@@/components/VideoCard'
-import { Video } from '@@/app/generated/prisma/client'
+import VideoCard from '@/components/VideoCard'
+import { Video } from '@/app/generated/prisma/client'
 import toast from 'react-hot-toast'
 import { FileUp, Loader2, Video as VideoIcon } from 'lucide-react'
 

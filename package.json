@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "prisma generate && next build",
+    "start": "next start ",
     "lint": "eslint"
   },
   "dependencies": {
@@ -15,7 +15,6 @@
     "@prisma/client": "^7.3.0",
     "axios": "^1.13.4",
     "cloudinary": "^2.9.0",
-    "daisyui": "^4.12.23",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
     "filesize": "^11.0.13",
